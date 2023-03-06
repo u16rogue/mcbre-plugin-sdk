@@ -117,6 +117,10 @@ struct event_module_unload {
 // -- End of EVENTS
 // ---------------------------------------------------------------------------------------------------- 
 
+/*
+ *  Interface to the Client's API
+ *  Allows you to interact with the internal client.
+ */
 class client_intf : public sdk::sdk_intf {
 public:
   virtual ~client_intf() = 0;
@@ -128,7 +132,7 @@ public:
    *  deletining the instance make sure to unregister it first using
    *  the `unregister_plugin`
    */
-  virtual auto register_plugin(plugin_intf * instance, const char * name) -> bool = 0;
+  virtual auto register_plugin(plugin_intf * instance) -> bool = 0;
 
   /*
    *  Unregisters a plugin instance in the client
@@ -137,6 +141,23 @@ public:
    *  know to not use the instance pointer anymore
    */
   virtual auto unregister_plugin(plugin_intf * instance) -> bool = 0;
+
+  /*
+   *  Register a module into the client
+   *
+   *  NOTE: You will be managing the life time of `instance`. Before
+   *  deletining the instance make sure to unregister it first using
+   *  the `unregister_module`
+   */
+  virtual auto register_module(plugin_intf * parent, module_intf * instance) -> bool = 0;
+
+  /*
+   *  Unregisters a previously registered module
+   *
+   *  Importance: This notifies other plugins and modules so they would
+   *  know to not use the instance pointer anymore
+   */
+  virtual auto unregister_module(module_intf * instance) -> bool = 0;
 
   /*
    *  Enumerate the loaded plugins on the client.
@@ -175,12 +196,12 @@ public:
   /*
    *  Obtain the C string of a `managed_string`
    */
-  virtual auto get_cstr(managed_string * ms) -> const char * = 0;
+  virtual auto get_mcstr(managed_string * ms) -> const char * = 0;
 
   /*
    *  Set the value of a `managed_string` with a C string
    */
-  virtual auto set_cstr(managed_string * ms, const char * str) -> managed_string * = 0;
+  virtual auto set_mcstr(managed_string * ms, const char * str) -> managed_string * = 0;
 
   // -------------------------------------------------------------------------------------------
   // -- Helpers
