@@ -22,6 +22,6 @@ set_target_properties(
 
 target_include_directories(
   ${PROJECT_NAME}
-  INTERFACE
+  PUBLIC
   "include/"
 )

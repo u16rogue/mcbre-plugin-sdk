@@ -51,7 +51,7 @@ struct event_chat_send {
    *  EXAMPLE:
    *  static const char * newmsg = "hello";
    *  ...
-   *  +[](eldt_chat_send * m) {
+   *  +[](event_chat_send * m) {
    *    newmsg     = "goodbye";
    *    m->message = &newmsg;
    *    m->action  = event_action::COMMIT;
@@ -65,6 +65,12 @@ struct event_chat_send {
 };
 using elfn_chat_send = typename event_chat_send::fn_t;
 
+/*
+ *  Event Listener: Chat log
+ *
+ *  Triggered when a new entry to the chat log
+ *  is added
+ */
 struct event_chat_log {
   static constexpr const char EVENT_ID[]  = "evn_chat_log";
   using fn_t = void(*)(event_chat_log * msg);
@@ -85,7 +91,7 @@ struct event_chat_log {
    *  EXAMPLE:
    *  static const char * newmsg = "hello";
    *  ...
-   *  +[](eldt_chat_log * m) {
+   *  +[](event_chat_log * m) {
    *    newmsg     = "goodbye";
    *    m->display_text = &newmsg;
    *    m->action  = event_action::COMMIT;
@@ -153,7 +159,7 @@ public:
 
   /*
    *  Logs a text into the ingame chat.
-   *  NOTE: Only logs text not send! This is client sided.
+   *  NOTE: Only logs text, not send! This is client sided.
    */
   virtual auto queue_log_chat(const char * text) -> bool = 0;
 
