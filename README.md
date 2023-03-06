@@ -21,9 +21,10 @@ HINSTANCE        hmod   = NULL;
 sdk::client_intf client = nullptr;
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
-  if (fwdReason == DLL_PROCESS_ATTACH && lpvReserved) {
-    hmod = hinstDLL;
-    client = reinterpret_cast<decltype(client)>(lpvReserved);
+  sdk::load_info * info = reinterpret_cast<decltype(info)>(lpvReserved);
+  if (fwdReason == DLL_PROCESS_ATTACH && info && info->client_sdk_version.major == sdk::version.major) {
+    hmod   = hinstDLL;
+    client = info->instance;
   }
   
   return TRUE;

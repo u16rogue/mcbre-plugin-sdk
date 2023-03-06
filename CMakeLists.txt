@@ -5,6 +5,7 @@ project(mcbre_sdk)
 add_library(
   ${PROJECT_NAME}
   STATIC
+  "include/sdk/types.hpp"
   "include/sdk/sdk_interface.hpp"
   "include/sdk/plugin_interface.hpp"
   "include/sdk/module_interface.hpp"

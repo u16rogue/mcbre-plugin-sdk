@@ -12,7 +12,7 @@ public:
   /*
    *   Query is user implemented! Implementer can define what ID values it can accept
    *   and what ptr output values are given. This can be used to further extend functionality
-   *   of other interfaces without creating extendeding the current interface.
+   *   of other interfaces without creating an extended interface.
    *
    *   There is no specification for this on what constitues for a valid ptr arg and size
    *   so check the interface you're using to see how to use it.

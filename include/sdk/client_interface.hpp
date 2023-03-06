@@ -4,6 +4,8 @@
 #include <cstddef>
 #include <type_traits>
 
+#include "types.hpp"
+
 #include "sdk_interface.hpp"
 #include "module_interface.hpp"
 #include "plugin_interface.hpp"
@@ -16,8 +18,8 @@ struct ver_info {
 };
 
 inline const ver_info verion = {
-  .major = 1,
-  .minor = 0
+  .major = 1, // Updated when breaking changes are introduced (VF index changes, parameter type changes, API changes, etc...)
+  .minor = 0, // Updated when non breaking changes are made (Addition of API, backend changes)
 };
 
 // ---------------------------------------------------------------------------------------------------- 
@@ -39,31 +41,9 @@ struct event_chat_send {
   static constexpr const char EVENT_ID[] = "evn_chat_send";
   using fn_t = void(*)(event_chat_send * msg);
 
-  event_action action;
-
-  /*
-   *  A pointer to the message sent by the player
-   *
-   *  The value of `message` can be overriden by providing a valid pointer to pointer to a null terminated string. After
-   *  the event dispatcher handles the override value the pointer value provided to `message` is set to null.
-   *  WARNING: If overriding, the lifetime for the new value of `message` MUST perist after the return of the event handler
-   *           which will then be processed by the event dispatcher.
-   *  EXAMPLE:
-   *  static const char * newmsg = "hello";
-   *  ...
-   *  +[](event_chat_send * m) {
-   *    newmsg     = "goodbye";
-   *    m->message = &newmsg;
-   *    m->action  = event_action::COMMIT;
-   *    return;
-   *  }
-   *  ...
-   *  // Sends a message to the ingame chat "goodbye"
-   *  // newmsg == nullptr
-   */
-  const char ** message;
+  event_action     action;
+  managed_string * message; // Message sent
 };
-using elfn_chat_send = typename event_chat_send::fn_t;
 
 /*
  *  Event Listener: Chat log
@@ -75,35 +55,64 @@ struct event_chat_log {
   static constexpr const char EVENT_ID[]  = "evn_chat_log";
   using fn_t = void(*)(event_chat_log * msg);
 
-  event_action action;
-
-  const char *  message;      // The message that was sent to chat
-  const char *  sender_name;  // The name of the sender
-  const char *  context;      // Context of the message
-
-  /*
-   *  A pointer to a text that is to be displayed in the chat logs
-   *
-   *  The value of `display_text` can be overriden by providing a valid pointer to pointer to a null terminated string. After
-   *  the event dispatcher handles the override value the pointer value provided to `display_text` is set to null.
-   *  WARNING: If overriding, the lifetime for the new value of `display_text` MUST perist after the return of the event handler
-   *           which will then be processed by the event dispatcher.
-   *  EXAMPLE:
-   *  static const char * newmsg = "hello";
-   *  ...
-   *  +[](event_chat_log * m) {
-   *    newmsg     = "goodbye";
-   *    m->display_text = &newmsg;
-   *    m->action  = event_action::COMMIT;
-   *    return;
-   *  }
-   *  ...
-   *  // Displays the text "goodbye" instead of the original message received into the chat log
-   *  // newmsg == nullptr
-   */
-  const char ** display_text;
+  event_action     action;
+  const char     * message;      // The message that was sent to chat
+  const char     * sender_name;  // The name of the sender
+  const char     * context;      // Context of the message
+  managed_string * display_text; // A pointer to a text that is to be displayed in the chat logs
 };
-using elfn_chat_log = typename event_chat_log::fn_t;
+
+/*
+ *  Event Listener: Plugin Loaded
+ *
+ *  Triggered when a plugin is created / loaded
+ *  successfuly
+ */
+struct event_plugin_load {
+  static constexpr const char EVENT_ID[]  = "evn_plug_loaded";
+  using fn_t = void(*)(event_plugin_load * msg);
+
+  sdk::plugin_intf * instance;
+};
+
+/*
+ *  Event Listener: Plugin Unload
+ *
+ *  Triggered when a plugin is unloading
+ *  successfuly
+ */
+struct event_plugin_unload {
+  static constexpr const char EVENT_ID[]  = "evn_plug_unload";
+  using fn_t = void(*)(event_plugin_unload * msg);
+
+  sdk::plugin_intf * instance;
+};
+
+/*
+ *  Event Listener: Dynamic Module Loaded
+ *
+ *  Triggered when a module is registered
+ *  successfuly
+ */
+struct event_module_load {
+  static constexpr const char EVENT_ID[]  = "evn_mod_loaded";
+  using fn_t = void(*)(event_module_load * msg);
+
+  sdk::plugin_intf * instance;
+};
+
+/*
+ *  Event Listener: Dynamic Module Unload
+ *
+ *  Triggered when a module is being unregistered
+ *  successfuly
+ */
+struct event_module_unload {
+  static constexpr const char EVENT_ID[]  = "evn_mod_unload";
+  using fn_t = void(*)(event_module_unload * msg);
+
+  sdk::plugin_intf * instance;
+};
 
 // -- End of EVENTS
 // ---------------------------------------------------------------------------------------------------- 
@@ -163,6 +172,16 @@ public:
    */
   virtual auto queue_log_chat(const char * text) -> bool = 0;
 
+  /*
+   *  Obtain the C string of a `managed_string`
+   */
+  virtual auto get_cstr(managed_string * ms) -> const char * = 0;
+
+  /*
+   *  Set the value of a `managed_string` with a C string
+   */
+  virtual auto set_cstr(managed_string * ms, const char * str) -> managed_string * = 0;
+
   // -------------------------------------------------------------------------------------------
   // -- Helpers
 
@@ -178,6 +197,14 @@ public:
     static_assert(std::is_same_v<typename T::fn_t, decltype(fn)>, "Event listener callback did not match the expected function signature.");
     return this->add_event_listener(T::EVENT_ID, fn);
   }
+
+  // -- End of Helpers
+  // -------------------------------------------------------------------------------------------
+};
+
+struct load_info {
+  ver_info client_sdk_version;
+  client_intf * instance;
 };
 
 } // sdk
