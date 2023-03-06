@@ -17,7 +17,7 @@ struct ver_info {
   int minor;
 };
 
-inline const ver_info verion = {
+inline const ver_info version = {
   .major = 1, // Updated when breaking changes are introduced (VF index changes, parameter type changes, API changes, etc...)
   .minor = 0, // Updated when non breaking changes are made (Addition of API, backend changes)
 };
@@ -123,25 +123,6 @@ struct event_module_unload {
  */
 class client_intf : public sdk::sdk_intf {
 public:
-  virtual ~client_intf() = 0;
-
-  /*
-   *  Allows you to register your plugin
-   *
-   *  NOTE: You will be managing the life time of `instance`. Before
-   *  deletining the instance make sure to unregister it first using
-   *  the `unregister_plugin`
-   */
-  virtual auto register_plugin(plugin_intf * instance) -> bool = 0;
-
-  /*
-   *  Unregisters a plugin instance in the client
-   *
-   *  Importance: This notifies other plugins and modules so they would
-   *  know to not use the instance pointer anymore
-   */
-  virtual auto unregister_plugin(plugin_intf * instance) -> bool = 0;
-
   /*
    *  Register a module into the client
    *
@@ -224,8 +205,10 @@ public:
 };
 
 struct load_info {
-  ver_info client_sdk_version;
-  client_intf * instance;
+  sdk::ver_info client_sdk_version;
+  sdk::client_intf * client;
+
+  sdk::plugin_intf * instance;
 };
 
 } // sdk

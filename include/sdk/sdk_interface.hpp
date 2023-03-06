@@ -7,8 +7,6 @@ namespace sdk {
 
 class sdk_intf {
 public:
-  virtual ~sdk_intf() = 0;
-
   /*
    *   Query is user implemented! Implementer can define what ID values it can accept
    *   and what ptr output values are given. This can be used to further extend functionality

@@ -17,14 +17,23 @@ target_link_libraries(
 #include <Windows.h>
 #include <sdk/client_interface.hpp>
 
-HINSTANCE        hmod   = NULL;
-sdk::client_intf client = nullptr;
+class myplugin : public sdk::plugin_intf {
+  ...
+};
+
+myplugin       * mypluginst = nullptr;
+HINSTANCE        hmod       = NULL;
+sdk::client_intf client     = nullptr;
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved) {
   sdk::load_info * info = reinterpret_cast<decltype(info)>(lpvReserved);
   if (fwdReason == DLL_PROCESS_ATTACH && info && info->client_sdk_version.major == sdk::version.major) {
-    hmod   = hinstDLL;
-    client = info->instance;
+    if (!mypluginst)
+      mypluginst = new myplugin();
+
+    info->instance = mypluginst;
+    hmod           = hinstDLL;
+    client         = info->client;
   }
   
   return TRUE;
